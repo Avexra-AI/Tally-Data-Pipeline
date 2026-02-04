@@ -1,7 +1,7 @@
 # Phase 1 — Tally Data Ingestion
 
 ## Repo Structure
-
+```text
 backend/
 ├── app/api/v1/ # FastAPI endpoints: ingest.py, health.py
 ├── core/ # Config and security
@@ -15,6 +15,7 @@ connector/
 ├── tally_connector.py
 └── requirements.txt 
 .gitignore
+```
 
 ##  Phase 1 Goals
 
