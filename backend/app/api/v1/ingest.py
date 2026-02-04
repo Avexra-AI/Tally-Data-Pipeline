@@ -17,8 +17,8 @@ def upload_file(
     db: Session = Depends(get_db),
     _: str = Depends(validate_connector_token),
 ):
-    # Generate upload_id as STRING UUID
-    upload_id = str(uuid.uuid4())
+    # Generate upload_id
+    upload_id = (uuid.uuid4())
 
     # Save raw file to disk (immutable)
     storage_path = save_raw_file(upload_id, file)
@@ -41,6 +41,6 @@ def upload_file(
 
     # Return minimal response
     return {
-        "upload_id": upload_id,
+        "upload_id": str(upload_id),
         "status": "STORED",
     }
