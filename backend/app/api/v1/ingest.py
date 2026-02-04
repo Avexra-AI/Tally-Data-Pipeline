@@ -6,6 +6,8 @@ from app.core.security import validate_connector_token
 from app.db.session import get_db
 from app.models.raw_upload import RawUpload
 from app.services.storage_service import save_raw_file
+from app.services.parse_service import parse_raw_file
+from app.services.staging_service import stage_vouchers
 from app.utils.audit_logger import log_audit
 
 router = APIRouter(prefix="/ingest", tags=["Ingestion"])
@@ -17,10 +19,10 @@ def upload_file(
     db: Session = Depends(get_db),
     _: str = Depends(validate_connector_token),
 ):
-    # Generate upload_id
+    # Generate upload_id 
     upload_id = (uuid.uuid4())
 
-    # Save raw file to disk (immutable)
+    # Step 2: Save raw file to disk
     storage_path = save_raw_file(upload_id, file)
 
     # Create raw_upload DB record
@@ -36,11 +38,17 @@ def upload_file(
     db.add(raw_upload)
     db.commit()
 
-    #  Write audit log
-    log_audit(db, upload_id, "File received and stored successfully")
+    # Step 3: Parse raw XML (outside route logic)
+    parsed_data = parse_raw_file(storage_path)
 
-    # Return minimal response
+    # Step 4: Stage parsed output
+    stage_vouchers(upload_id, parsed_data, db)
+
+
+    # Audit log
+    log_audit(db, upload_id, "File stored, parsed, and staged successfully")
+
     return {
         "upload_id": str(upload_id),
-        "status": "STORED",
+        "status": "STORED_AND_STAGED",
     }
